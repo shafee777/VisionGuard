@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Result</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap">
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #000;
+            color: #0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+            margin-bottom: 1rem;
+        }
+
+        .result-container {
+            background-color: #111;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #0f0;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        .result-item {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .result-item strong {
+            color: #0f0;
+        }
+
+        .result-icon {
+            font-size: 1.5rem;
+            margin-left: 1rem;
+        }
+
+        .result-icon.safe {
+            color: #0f0;
+        }
+
+        .result-icon.suspicious {
+            color: #ff0;
+        }
+
+        .result-icon.malicious {
+            color: #f00;
+        }
+
+        .score {
+            font-size: 2rem;
+            color: #0f0;
+            margin-top: 1rem;
+        }
+
+        .score.safe {
+            color: #0f0;
+        }
+
+        .score.suspicious {
+            color: #ff0;
+        }
+
+        .score.malicious {
+            color: #f00;
+        }
+
+        .back-link {
+            color: #0f0;
+            text-decoration: none;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-link:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+
+        .circle-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin-top: 2rem;
+        }
+
+        .circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.5rem;
+        }
+
+        .circle svg {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .circle-perimeter {
+            fill: none;
+            stroke-width: 5;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            animation: drawCircle 3s linear forwards;
+        }
+
+        .circle.red .circle-perimeter {
+            stroke: #f00;
+        }
+
+        .circle.yellow .circle-perimeter {
+            stroke: #ff0;
+        }
+
+        .circle.green .circle-perimeter {
+            stroke: #0f0;
+        }
+
+        @keyframes drawCircle {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Analysis Result</h1>
+    <div class="result-container">
+        <div class="result-item">
+            <strong>Virus Score:</strong>
+            <span class="result-icon {{ 'safe' if vt_result.get('malicious', 0) == 0 and vt_result.get('suspicious', 0) == 0 else 'suspicious' if vt_result.get('suspicious', 0) > 0 else 'malicious' }}">
+                {{ '✔' if vt_result.get('malicious', 0) == 0 and vt_result.get('suspicious', 0) == 0 else '⚠' if vt_result.get('suspicious', 0) > 0 else '✖' }}
+            </span>
+        </div>
+
+        <div class="result-item">
+            <strong>Phishing Check:</strong>
+            <span class="result-icon {{ 'safe' if not phishing_result.get('matches', False) else 'suspicious' if phishing_result.get('matches', False) else 'malicious' }}">
+                {{ '✔' if not phishing_result.get('matches', False) else '⚠' if phishing_result.get('matches', False) else '✖' }}
+            </span>
+        </div>
+
+        <div class="result-item">
+            <strong>Malware Check:</strong>
+            <span class="result-icon {{ 'safe' if not malware_result.get('matches', False) else 'suspicious' if malware_result.get('matches', False) else 'malicious' }}">
+                {{ '✔' if not malware_result.get('matches', False) else '⚠' if malware_result.get('matches', False) else '✖' }}
+            </span>
+        </div>
+
+        <div class="result-item">
+            <strong>Unwanted Software Check:</strong>
+            <span class="result-icon {{ 'safe' if not unwanted_software_result.get('matches', False) else 'suspicious' if unwanted_software_result.get('matches', False) else 'malicious' }}">
+                {{ '✔' if not unwanted_software_result.get('matches', False) else '⚠' if unwanted_software_result.get('matches', False) else '✖' }}
+            </span>
+        </div>
+
+        <div class="result-item">
+            <strong>Image Analysis:</strong>
+            <span class="result-icon {{ 'safe' if not image_analysis.get('is_suspicious', False) else 'suspicious' if image_analysis.get('is_suspicious', False) else 'malicious' }}">
+                {{ '✔' if not image_analysis.get('is_suspicious', False) else '⚠' if image_analysis.get('is_suspicious', False) else '✖' }}
+            </span>
+        </div>
+
+        <div class="score {{ 'safe' if score >= 70 else 'suspicious' if score >= 40 else 'malicious' }}">
+            Safety Score: {{ score }} / 100
+        </div>
+    </div>
+
+    <div class="circle-container">
+        <div class="circle {{ 'green' if score >= 70 else 'yellow' if score >= 40 else 'red' }}">
+            <svg viewBox="0 0 100 100">
+                <circle class="circle-perimeter" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+            </svg>
+            <span>{{ score }}</span>
+        </div>
+    </div>
+
+    <a href="/" class="back-link">Go Back</a>
+</body>
+</html>
