@@ -1,7 +1,7 @@
 import os
 import requests
 import base64
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import cv2
 import numpy as np
 import pytesseract
@@ -128,7 +128,31 @@ def detect():
         score -= 10
 
     if results["image_analysis"].get("is_suspicious", False):
-        score -= 10
+        text = results["image_analysis"].get("text", "")
+        suspicious_keywords = [
+            "free", "urgent", "limited time offer", "click here", "win", "prize", "congratulations",
+            "claim now", "winner", "lottery", "jackpot", "instant cash", "guaranteed", "exclusive deal",
+            "only today", "special promotion", "act now", "don't miss", "risk-free", "easy money",
+            "no investment", "make money fast", "double your income", "work from home", "miracle",
+            "amazing", "unbelievable", "secret", "hidden", "unknown", "shocking", "one-time offer",
+            "fast approval", "pre-approved", "zero cost", "extra income", "no risk", "100{%} free",
+            "instant approval", "low-cost", "discount", "billionaire secret", "as seen on", "VIP",
+            "confidential", "guaranteed results", "no credit check", "act fast", "order now", "no catch",
+            "click below", "sign up free", "free gift", "urgent update", "verify account", "account suspended",
+            "security alert", "bank notice", "unauthorized transaction", "suspicious activity", "reset password",
+            "dear user", "official notice", "last warning", "identity verification", "update required",
+            "confirm your details", "fake invoice", "you have been selected", "limited availability",
+            "hot deal", "lowest price", "hurry up", "100{%} satisfaction", "guaranteed income", "cash reward",
+            "bonus", "earn today", "win big", "get rich", "investment opportunity", "lotto", "you won",
+            "financial freedom", "become a millionaire", "quick money", "easy loan", "no collateral",
+            "government grant", "secret investment", "binary options", "crypto giveaway", "urgent payment",
+            "unexpected gift", "claim your funds", "exclusive invitation", "confidential message",
+            "this won't last", "high returns", "send money now", "wire transfer", "cheap offer"
+        ]
+        extracted_words = [word for word in suspicious_keywords if word in text.lower()]
+
+        if extracted_words:
+            return render_template('confirm.html', extracted_words=extracted_words)
 
     score = max(score, 0)
     score = round(score, 2)
@@ -136,6 +160,14 @@ def detect():
     results["score"] = score
 
     return render_template('result.html', **results)
+
+@app.route('/confirm')
+def confirm():
+    response = request.args.get('response', 'no')
+    if response == 'yes':
+        return "This ad is likely targeted based on your recent activity."
+    else:
+        return "This ad is not confirmed to be targeted."
 
 if __name__ == '__main__':
     app.run(debug=True)
